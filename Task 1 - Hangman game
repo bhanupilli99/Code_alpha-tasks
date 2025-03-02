@@ -1,0 +1,92 @@
+import pygame
+import random
+
+# Initialize pygame
+pygame.init()
+
+# Constants
+WIDTH, HEIGHT = 800, 600
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+FONT = pygame.font.Font(None, 48)
+
+# Word list
+WORDS = ['python', 'java', 'hangman', 'programming', 'developer']
+
+def choose_word():
+    return random.choice(WORDS)
+
+def display_word(word, guessed_letters):
+    return ' '.join(letter if letter in guessed_letters else '_' for letter in word)
+
+def draw_hangman(screen, attempts):
+    base_x, base_y = 200, 500
+    pole_x, pole_y = 200, 200
+    beam_x, beam_y = 400, 200
+    rope_x, rope_y = 400, 250
+    
+    pygame.draw.line(screen, BLACK, (base_x, base_y), (base_x + 200, base_y), 5)  # Base
+    pygame.draw.line(screen, BLACK, (pole_x, base_y), (pole_x, pole_y), 5)  # Pole
+    pygame.draw.line(screen, BLACK, (pole_x, pole_y), (beam_x, beam_y), 5)  # Beam
+    pygame.draw.line(screen, BLACK, (beam_x, beam_y), (rope_x, rope_y), 5)  # Rope
+    
+    if attempts < 6:
+        pygame.draw.circle(screen, BLACK, (400, 275), 25, 3)  # Head
+    if attempts < 5:
+        pygame.draw.line(screen, BLACK, (400, 300), (400, 375), 3)  # Body
+    if attempts < 4:
+        pygame.draw.line(screen, BLACK, (400, 320), (370, 350), 3)  # Left Arm
+    if attempts < 3:
+        pygame.draw.line(screen, BLACK, (400, 320), (430, 350), 3)  # Right Arm
+    if attempts < 2:
+        pygame.draw.line(screen, BLACK, (400, 375), (370, 425), 3)  # Left Leg
+    if attempts < 1:
+        pygame.draw.line(screen, BLACK, (400, 375), (430, 425), 3)  # Right Leg
+
+def hangman():
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Hangman Game")
+    clock = pygame.time.Clock()
+    
+    word = choose_word()
+    guessed_letters = set()
+    attempts = 6
+    running = True
+    
+    while running:
+        screen.fill(WHITE)
+        
+        text = FONT.render(f"Word: {display_word(word, guessed_letters)}", True, BLACK)
+        screen.blit(text, (50, 50))
+        
+        attempt_text = FONT.render(f"Attempts left: {attempts}", True, RED)
+        screen.blit(attempt_text, (50, 100))
+        
+        draw_hangman(screen, attempts)
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.unicode.isalpha():
+                    guess = event.unicode.lower()
+                    if guess not in guessed_letters:
+                        guessed_letters.add(guess)
+                        if guess not in word:
+                            attempts -= 1
+        
+        if all(letter in guessed_letters for letter in word):
+            print(f"Congratulations! You guessed the word: {word}")
+            running = False
+        elif attempts == 0:
+            print(f"Game Over! The word was: {word}")
+            running = False
+        
+        clock.tick(30)
+    
+    pygame.quit()
+
+if __name__ == "__main__":
+    hangman()
